@@ -249,12 +249,13 @@ def autoposting(autoposting_bot_name):
 			driver.get("https://twitter.com/home")	
 
 			picture_req = get(URL)
+			img_name = str(uuid1()).replace("-", "")[:4]
 			if picture_req.status_code == 200:
-				with open("3.jpg", 'wb') as f:
+				with open(img_name+".jpg", 'wb') as f:
 					f.write(picture_req.content)
 
-			system("nconvert -out jpeg -o %_.jpg -q 95 -rmeta -rexifthumb -noise uniform 0.1 3.jpg")
-			wait(driver, '//input[@type="file"]', 10, 1).send_keys(abspath("3_.jpg"))
+			system("nconvert -out jpeg -o %_.jpg -q 95 -rmeta -rexifthumb -noise uniform 0.1 "+img_name+".jpg")
+			wait(driver, '//input[@type="file"]', 10, 1).send_keys(abspath(img_name+"_.jpg"))
 
 			with open("texts.txt", 'r', encoding="utf-8") as f:
 				all_texts = f.read().split("\n\n")
@@ -265,8 +266,8 @@ def autoposting(autoposting_bot_name):
 			wait(driver, '//div[@data-testid="tweetButtonInline"]', 10, 1).click()
 			sleep(5)
 			changearrayval("Bots/" + autoposting_bot_name + "/stat.json", "Posts", "Next post: " + strftime("%X", gmtime(time() - timezone + PAUSE_BETWEEN_POSTS)))
-			remove("3.jpg")
-			remove("3_.jpg")
+			remove(img_name+".jpg")
+			remove(img_name+"_.jpg")
 			driver.quit()
 			sleep(PAUSE_BETWEEN_POSTS)
 	except Exception as e:
