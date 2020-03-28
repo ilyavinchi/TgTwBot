@@ -93,7 +93,7 @@ bnames = listdir("Bots/")
 for x in bnames:
 	jdump("Bots/" + x + "/stat.json", {"Followings": "OFF", "Posts": "OFF"})
 	jdump("Bots/" + x + "/pause.json", 0)
-	jdump("Bots/" + x + "/base.json", [])
+	# jdump("Bots/" + x + "/base.json", [])
 
 def changearrayval(changefile_path, change_key, change_val):
 	if exists(changefile_path):
@@ -289,27 +289,31 @@ def delete_last_post(delete_last_post_name):
 	driver.quit()
 
 def parsing(dr):
-	driver = dr
-	wait(driver, '//a[@data-testid="AppTabBar_Explore_Link"]/div', 10, 1).click()
-	el = wait(driver, "//input[@data-testid='SearchBox_Search_Input']", 10, 1)
-	el.click()
-	el.send_keys(SEND_PARSING_TEXT)
-	el.send_keys(Keys.ENTER)
-	wait(driver, '//nav/div[@role="tablist"]/div[2]/a/div', 10, 1).click()
-	driver.refresh()
-	driver.refresh()
-	for x in range(60):
-		try:
-			logins = wait(driver, '//div[@data-testid="tweet"]/div/div/div/div/div/div/a/div/div[2]', 10, 2)
-			ready_logins = []
-			for i in range(PARSE_AT_A_TIME):
-				user_name = logins[i].text.replace("@", "")
-				if user_name:
-					ready_logins.append(user_name)
-			return ready_logins
-		except:
-			sleep(1)
-			continue
+	try:
+		driver = dr
+		wait(driver, '//a[@data-testid="AppTabBar_Explore_Link"]/div', 10, 1).click()
+		el = wait(driver, "//input[@data-testid='SearchBox_Search_Input']", 10, 1)
+		el.click()
+		el.send_keys(SEND_PARSING_TEXT)
+		el.send_keys(Keys.ENTER)
+		wait(driver, '//nav/div[@role="tablist"]/div[2]/a/div', 10, 1).click()
+		driver.refresh()
+		driver.refresh()
+		for x in range(60):
+			try:
+				logins = wait(driver, '//div[@data-testid="tweet"]/div/div/div/div/div/div/a/div/div[2]', 10, 2)
+				ready_logins = []
+				for i in range(PARSE_AT_A_TIME):
+					user_name = logins[i].text.replace("@", "")
+					if user_name:
+						ready_logins.append(user_name)
+				return ready_logins
+			except:
+				sleep(1)
+				continue
+	except:
+		raise Exception("Ошибка парсинга")
+
 def autofollowing(autofollowing_bot_name, follow_mode = 0, last_count = 0):
 	try:
 		changearrayval("Bots/" + autofollowing_bot_name + "/stat.json", "Followings", "START")
@@ -591,115 +595,116 @@ def pause_actions():
 # cookie_creator("Celia Brown")
 # test_account("Bot Name")
 
-bot = TeleBot('1107563794:AAHwpuyWE1JWF2ZLTfGp7pMnMmWX_ys8omw')
 
-Thread(target=pausecheker).start()
+# bot = TeleBot('1107563794:AAHwpuyWE1JWF2ZLTfGp7pMnMmWX_ys8omw')
 
-@bot.message_handler(commands=['help'])
-def send_welcome(message):
-	bot.send_message(USERTELEGRAMID, HELPER)
+# Thread(target=pausecheker).start()
+
+# @bot.message_handler(commands=['help'])
+# def send_welcome(message):
+# 	bot.send_message(USERTELEGRAMID, HELPER)
 	
-@bot.message_handler(commands=['start'])
-def send_welcome(message):
-	bots_names = listdir("Bots/")
-	s_m = "Имена ботов:"
-	for x in bots_names:
-		s_m = s_m + "\n" + x
-	bot.send_message(USERTELEGRAMID, s_m)
+# @bot.message_handler(commands=['start'])
+# def send_welcome(message):
+# 	bots_names = listdir("Bots/")
+# 	s_m = "Имена ботов:"
+# 	for x in bots_names:
+# 		s_m = s_m + "\n" + x
+# 	bot.send_message(USERTELEGRAMID, s_m)
 
-@bot.message_handler(commands=['off'])
-def send_welcome(message):
-	bots_names = listdir("Bots/")
-	for x in bots_names:
-		if not x in active_bots_following:
-			bot.send_message(USERTELEGRAMID, x + " автоподписка не включена")
-		if not x in active_bots_posting:
-			bot.send_message(USERTELEGRAMID, x + " автопостинг не включен")
+# @bot.message_handler(commands=['off'])
+# def send_welcome(message):
+# 	bots_names = listdir("Bots/")
+# 	for x in bots_names:
+# 		if not x in active_bots_following:
+# 			bot.send_message(USERTELEGRAMID, x + " автоподписка не включена")
+# 		if not x in active_bots_posting:
+# 			bot.send_message(USERTELEGRAMID, x + " автопостинг не включен")
 
-@bot.message_handler(commands=['active'])
-def send_welcome(message):
-	bots_names = listdir("Bots/")
-	for x in bots_names:
-		if x in active_bots_following:
-			bot.send_message(USERTELEGRAMID, x + " автоподписка включена")
-		if x in active_bots_posting:
-			bot.send_message(USERTELEGRAMID, x + " автопостинг включен")
+# @bot.message_handler(commands=['active'])
+# def send_welcome(message):
+# 	bots_names = listdir("Bots/")
+# 	for x in bots_names:
+# 		if x in active_bots_following:
+# 			bot.send_message(USERTELEGRAMID, x + " автоподписка включена")
+# 		if x in active_bots_posting:
+# 			bot.send_message(USERTELEGRAMID, x + " автопостинг включен")
 
-@bot.message_handler(commands=['s'])
-def send_welcome(message):
-	bot.send_message(USERTELEGRAMID, 'Имя бота?: ')
-	bot.register_next_step_handler(message, start_bot)
+# @bot.message_handler(commands=['s'])
+# def send_welcome(message):
+# 	bot.send_message(USERTELEGRAMID, 'Имя бота?: ')
+# 	bot.register_next_step_handler(message, start_bot)
 
-@bot.message_handler(commands=['b'])
-def send_welcome(message):
-	balance_info = get('http://api.sms-reg.com/getBalance.php?apikey=8t0kjwxk118uih3peiw3c8rbb7e61g62')
-	balance_info = balance_info.text
-	json_balance_info = loads(balance_info)
-	bot.send_message(USERTELEGRAMID, "Ваш балланс: " + json_balance_info['balance'])
+# @bot.message_handler(commands=['b'])
+# def send_welcome(message):
+# 	balance_info = get('http://api.sms-reg.com/getBalance.php?apikey=8t0kjwxk118uih3peiw3c8rbb7e61g62')
+# 	balance_info = balance_info.text
+# 	json_balance_info = loads(balance_info)
+# 	bot.send_message(USERTELEGRAMID, "Ваш балланс: " + json_balance_info['balance'])
 
-@bot.message_handler(commands=['code'])
-def send_welcome(message):
-	bot.send_message(USERTELEGRAMID, 'Введите tzid: ')
-	bot.register_next_step_handler(message, getcode)
+# @bot.message_handler(commands=['code'])
+# def send_welcome(message):
+# 	bot.send_message(USERTELEGRAMID, 'Введите tzid: ')
+# 	bot.register_next_step_handler(message, getcode)
 
-@bot.message_handler(commands=['new'])
-def send_welcome(message):
-	if balance():
-		bot.send_message(USERTELEGRAMID, "Создание началось")
-		Thread(target=newaccount).start()
-	else:
-		bot.send_message(USERTELEGRAMID, "Пополните баланс")
+# @bot.message_handler(commands=['new'])
+# def send_welcome(message):
+# 	if balance():
+# 		bot.send_message(USERTELEGRAMID, "Создание началось")
+# 		Thread(target=newaccount).start()
+# 	else:
+# 		bot.send_message(USERTELEGRAMID, "Пополните баланс")
 
-@bot.message_handler(commands=['del'])
-def send_welcome(message):
-	bot.send_message(USERTELEGRAMID, 'Имя бота (удаление)?: ')
-	bot.register_next_step_handler(message, delbot)
+# @bot.message_handler(commands=['del'])
+# def send_welcome(message):
+# 	bot.send_message(USERTELEGRAMID, 'Имя бота (удаление)?: ')
+# 	bot.register_next_step_handler(message, delbot)
 
-@bot.message_handler(commands=['stat'])
-def send_welcome(message):
-	bots_names = listdir("Bots/")
-	for x in bots_names:
-		try:
-			bot_stat = jload("Bots/" + x + "/stat.json")
-			bot.send_message(USERTELEGRAMID, "Имя бота: " + x + "\nПодписок: " + bot_stat["Followings"] + "\nСледующий пост: " + bot_stat["Posts"])
-		except Exception as e:
-			print(e)
-			continue
+# @bot.message_handler(commands=['stat'])
+# def send_welcome(message):
+# 	bots_names = listdir("Bots/")
+# 	for x in bots_names:
+# 		try:
+# 			bot_stat = jload("Bots/" + x + "/stat.json")
+# 			bot.send_message(USERTELEGRAMID, "Имя бота: " + x + "\nПодписок: " + bot_stat["Followings"] + "\nСледующий пост: " + bot_stat["Posts"])
+# 		except Exception as e:
+# 			print(e)
+# 			continue
 
-@bot.message_handler(commands=['pcheck'])
-def send_welcome(message):
-	bots_names = listdir("Bots/")
-	for x in bots_names:
-		pause = jload("Bots/" + x + "/pause.json")
-		if pause < time():
-			bot.send_message(USERTELEGRAMID, x + ": Пауза закончилась")
-		else:
-			bot.send_message(USERTELEGRAMID, x + ": Пауза до " + ctime(pause))
+# @bot.message_handler(commands=['pcheck'])
+# def send_welcome(message):
+# 	bots_names = listdir("Bots/")
+# 	for x in bots_names:
+# 		pause = jload("Bots/" + x + "/pause.json")
+# 		if pause < time():
+# 			bot.send_message(USERTELEGRAMID, x + ": Пауза закончилась")
+# 		else:
+# 			bot.send_message(USERTELEGRAMID, x + ": Пауза до " + ctime(pause))
 
-def start_bot(message):
-	b_name = message.text
-	if exists("Bots/" + b_name):
-		pause = jload("Bots/" + b_name + "/pause.json") - time()
-		if pause < 0:
-			active_bots_following.append(b_name)
-			Thread(target=autofollowing, args=(b_name,)).start()
-		else:
-			bot.send_message(USERTELEGRAMID, "Пауза, вы сможете повторно запустить автофоловинг в: " + strftime("%X", gmtime(pause)))
+# def start_bot(message):
+# 	b_name = message.text
+# 	if exists("Bots/" + b_name):
+# 		pause = jload("Bots/" + b_name + "/pause.json") - time()
+# 		if pause < 0:
+# 			active_bots_following.append(b_name)
+# 			Thread(target=autofollowing, args=(b_name,)).start()
+# 		else:
+# 			bot.send_message(USERTELEGRAMID, "Пауза, вы сможете повторно запустить автофоловинг в: " + strftime("%X", gmtime(pause)))
 
-		active_bots_posting.append(b_name)
-		Thread(target=autoposting, args=(b_name,)).start()
-		Thread(target=pause_actions).start()
-	else:
-		bot.send_message(USERTELEGRAMID, "Неверное имя бота")
-	# Thread(target=autoposting, args=(b_name,)).start()
-def getcode(message):
-	tzid = message.text
-	Thread(target=tcode, args=(tzid,)).start()
-def delbot(message):
-	bname = message.text
-	if exists("Bots/" + bname):
-		rmtree("Bots/" + bname)
-	else:
-		bot.send_message(USERTELEGRAMID, "Файл не найден")
+# 		active_bots_posting.append(b_name)
+# 		Thread(target=autoposting, args=(b_name,)).start()
+# 		Thread(target=pause_actions).start()
+# 	else:
+# 		bot.send_message(USERTELEGRAMID, "Неверное имя бота")
+# 	# Thread(target=autoposting, args=(b_name,)).start()
+# def getcode(message):
+# 	tzid = message.text
+# 	Thread(target=tcode, args=(tzid,)).start()
+# def delbot(message):
+# 	bname = message.text
+# 	if exists("Bots/" + bname):
+# 		rmtree("Bots/" + bname)
+# 	else:
+# 		bot.send_message(USERTELEGRAMID, "Файл не найден")
 
-bot.polling()
+# bot.polling()
