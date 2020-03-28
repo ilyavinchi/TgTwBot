@@ -309,7 +309,7 @@ def autofollowing(autofollowing_bot_name, follow_mode = 0, last_count = 0):
 	try:
 		changearrayval("Bots/" + autofollowing_bot_name + "/stat.json", "Followings", "START")
 		bot.send_message(USERTELEGRAMID, autofollowing_bot_name + " AUTOFOLLOWING START")
-		driver = driver_start(autofollowing_bot_name, False)
+		driver = driver_start(autofollowing_bot_name, True)
 		count_of_followings = last_count
 		count_of_unfollowings = last_count
 		following_base = []
