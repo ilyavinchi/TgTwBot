@@ -41,7 +41,6 @@ HELPER = '''/start - выведет именна всех ботов
 /pcheck - Показывает включенна ли пауза'''
 active_bots_following = []
 active_bots_posting = []
-
 def jload(jload_path):
 	if exists(jload_path):
 		while True:
@@ -89,6 +88,12 @@ def pdump(pdump_path, what_dump):
 				continue
 	else:
 			return
+
+bnames = listdir("Bots/")
+for x in bnames:
+	jdump("Bots/" + x + "/stat.json", {"Followings": "OFF", "Posts": "OFF"})
+	jdump("Bots/" + x + "/pause.json", 0)
+	jdump("Bots/" + x + "/base.json", [])
 
 def changearrayval(changefile_path, change_key, change_val):
 	if exists(changefile_path):
@@ -587,6 +592,7 @@ def pause_actions():
 # test_account("Bot Name")
 
 bot = TeleBot('1107563794:AAHwpuyWE1JWF2ZLTfGp7pMnMmWX_ys8omw')
+
 Thread(target=pausecheker).start()
 
 @bot.message_handler(commands=['help'])
