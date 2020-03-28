@@ -598,8 +598,6 @@ def pause_actions():
 
 bot = TeleBot('1107563794:AAHwpuyWE1JWF2ZLTfGp7pMnMmWX_ys8omw')
 
-Thread(target=pausecheker).start()
-
 @bot.message_handler(commands=['help'])
 def send_welcome(message):
 	bot.send_message(USERTELEGRAMID, HELPER)
@@ -685,7 +683,7 @@ def start_bot(message):
 	b_name = message.text
 	if exists("Bots/" + b_name):
 		pause = jload("Bots/" + b_name + "/pause.json") - time()
-		if pause < 0:
+		if pause < time():
 			active_bots_following.append(b_name)
 			Thread(target=autofollowing, args=(b_name,)).start()
 		else:
