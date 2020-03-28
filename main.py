@@ -683,7 +683,7 @@ def send_welcome(message):
 def start_bot(message):
 	b_name = message.text
 	if exists("Bots/" + b_name):
-		pause = jload("Bots/" + b_name + "/pause.json") - time()
+		pause = jload("Bots/" + b_name + "/pause.json")
 		if pause < time():
 			active_bots_following.append(b_name)
 			Thread(target=autofollowing, args=(b_name,)).start()
