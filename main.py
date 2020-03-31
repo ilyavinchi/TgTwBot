@@ -628,7 +628,7 @@ def pause_actions():
 # 			clipboard.copy(x["tzid"])
 # 	except Exception as e:
 # 		continue
-
+test_account("Celia Brown")
 def autoposting_loop():
 	global active_bots_posting
 	bots = listdir("Bots/")
@@ -636,7 +636,7 @@ def autoposting_loop():
 	while True:
 		for x in active_bots_posting:
 			bot.send_message(USERTELEGRAMID, "Запущен Автопостинг " + str(active_bots_posting.index(x) + 1) + " из " + str(len(active_bots_posting)))
-			autoposting(x)
+			Thread(target=autoposting, args=(x,)).start()
 			bot.send_message(USERTELEGRAMID, "Пауза 30 сек")
 			sleep(30)
 
@@ -654,7 +654,7 @@ def autofollowing_loop():
 				if b_pause < time():
 					active_bots_following.append(x)
 					bot.send_message(USERTELEGRAMID, )
-					autofollowing(x)
+					Thread(target=autofollowing, args=(x,)).start()
 					break
 		sleep(30)
 # WANDA ROVERO - доделать с картинок
