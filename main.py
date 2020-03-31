@@ -628,7 +628,7 @@ def pause_actions():
 # 			clipboard.copy(x["tzid"])
 # 	except Exception as e:
 # 		continue
-test_account("Celia Brown")
+
 def autoposting_loop():
 	global active_bots_posting
 	bots = listdir("Bots/")
