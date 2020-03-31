@@ -650,7 +650,6 @@ def autofollowing_loop():
 			bots = listdir("Bots/")
 			for x in bots:
 				b_pause = jload("Bots/" + x + "/pause.json")
-				print(b_pause)
 				if b_pause < time():
 					active_bots_following.append(x)
 					Thread(target=autofollowing, args=(x,)).start()
