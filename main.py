@@ -633,18 +633,18 @@ def autoposting_loop():
 	global active_bots_posting
 	bots = listdir("Bots/")
 	active_bots_posting.extend(bots)
-	print(active_bots_posting)
 	while True:
 		for x in active_bots_posting:
-			print("Start Autoposting for " + x)
+			bot.send_message(USERTELEGRAMID, "Запущен Автопостинг " + str(active_bots_posting.index(x) + 1) + " из " + str(len(active_bots_posting)))
 			autoposting(x)
 			sleep(30)
+
+		bot.send_message(USERTELEGRAMID, "Пауза автопостинг 3 часа начата")
 		sleep(10800)
+		bot.send_message(USERTELEGRAMID, "Пауза автопостинг 3 часа закончилась")
+
 def autofollowing_loop():
 	bots = listdir("Bots/")
-	for x in range(COUNT_OF_FOLLOW_THREADS):
-		autofollowing(bots[x])
-		sleep(30)
 	while True:
 		if len(active_bots_following) < COUNT_OF_FOLLOW_THREADS:
 			bots = listdir("Bots/")
@@ -652,6 +652,7 @@ def autofollowing_loop():
 				b_pause = jload("Bots/" + x + "/pause.json")
 				if b_pause < time():
 					active_bots_following.append(x)
+					bot.send_message(USERTELEGRAMID, )
 					autofollowing(x)
 					break
 		sleep(30)
@@ -743,7 +744,7 @@ def send_welcome(message):
 def send_welcome(message):
 	global autoposting_mode
 	if autoposting_mode:
-		Thread(target=autoposting_loop)
+		Thread(target=autoposting_loop).start()
 		bot.send_message(USERTELEGRAMID, "Автопостинг запущен!")
 		autoposting_mode = False
 	else:
@@ -753,7 +754,7 @@ def send_welcome(message):
 def send_welcome(message):
 	global autofollowing_mode
 	if autofollowing_mode:
-		Thread(target=autofollowing_loop)
+		Thread(target=autofollowing_loop).start()
 		bot.send_message(USERTELEGRAMID, "Автофолловинг запущен!")
 		autofollowing_mode = False
 	else:
