@@ -654,9 +654,6 @@ def autofollowing_loop():
 				if b_pause < time():
 					active_bots_following.append(x)
 					Thread(target=autofollowing, args=(x,)).start()
-					bot.send_message(USERTELEGRAMID, "Пауза 30 сек")
-					sleep(30)
-					bot.send_message(USERTELEGRAMID, "Пауза 30 сек закончилась")
 					break
 				else:
 					continue
