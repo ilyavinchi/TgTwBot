@@ -388,6 +388,7 @@ def autofollowing(autofollowing_bot_name, follow_mode = 0, last_count = 0):
 	except Exception as e:
 		print(e)
 		driver.quit()
+		active_bots_following.remove(autofollowing_bot_name)
 		changearrayval("Bots/" + autofollowing_bot_name + "/stat.json", "Followings", "ERROR")
 		settings = jload("Bots/" + autofollowing_bot_name + "/settings.json")
 		s_m = "Account banned"
