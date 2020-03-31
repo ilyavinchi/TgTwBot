@@ -637,6 +637,7 @@ def autoposting_loop():
 		for x in active_bots_posting:
 			bot.send_message(USERTELEGRAMID, "Запущен Автопостинг " + str(active_bots_posting.index(x) + 1) + " из " + str(len(active_bots_posting)))
 			autoposting(x)
+			bot.send_message(USERTELEGRAMID, "Пауза 30 сек")
 			sleep(30)
 
 		bot.send_message(USERTELEGRAMID, "Пауза автопостинг 3 часа начата")
