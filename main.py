@@ -323,6 +323,7 @@ def parsing(dr):
 def autofollowing(autofollowing_bot_name, follow_mode = 0, last_count = 0):
 	try:
 		changearrayval("Bots/" + autofollowing_bot_name + "/stat.json", "Followings", "START")
+		jdump("Bots/" + autofollowing_bot_name + "/pause.json", time() + 86400)
 		bot.send_message(USERTELEGRAMID, autofollowing_bot_name + " AUTOFOLLOWING START")
 		driver = driver_start(autofollowing_bot_name, True)
 		count_of_followings = last_count
@@ -330,7 +331,6 @@ def autofollowing(autofollowing_bot_name, follow_mode = 0, last_count = 0):
 		following_base = []
 		following_save_base = jload("Bots/" + autofollowing_bot_name + "/base.json")
 		mode = follow_mode
-		jdump("Bots/" + autofollowing_bot_name + "/pause.json", time() + 86400)
 		if len(following_save_base) < 4500 and mode == 0:
 			while count_of_followings < MAX_FOLLOWING_PER_DAY:
 				if len(following_base) == 0:
@@ -645,12 +645,12 @@ def autoposting_loop():
 		bot.send_message(USERTELEGRAMID, "Пауза автопостинг 3 часа закончилась")
 
 def autofollowing_loop():
-	bots = listdir("Bots/")
 	while True:
 		if len(active_bots_following) < COUNT_OF_FOLLOW_THREADS:
 			bots = listdir("Bots/")
 			for x in bots:
 				b_pause = jload("Bots/" + x + "/pause.json")
+				print(b_pause)
 				if b_pause < time():
 					active_bots_following.append(x)
 					Thread(target=autofollowing, args=(x,)).start()
@@ -658,8 +658,10 @@ def autofollowing_loop():
 					sleep(30)
 					bot.send_message(USERTELEGRAMID, "Пауза 30 сек закончилась")
 					break
+				else:
+					continue
 		sleep(30)
-# WANDA ROVERO - доделать с картинок
+
 bot = TeleBot('1107563794:AAHwpuyWE1JWF2ZLTfGp7pMnMmWX_ys8omw')
 
 @bot.message_handler(commands=['help'])
