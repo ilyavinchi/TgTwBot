@@ -653,8 +653,10 @@ def autofollowing_loop():
 				b_pause = jload("Bots/" + x + "/pause.json")
 				if b_pause < time():
 					active_bots_following.append(x)
-					bot.send_message(USERTELEGRAMID, )
 					Thread(target=autofollowing, args=(x,)).start()
+					bot.send_message(USERTELEGRAMID, "Пауза 30 сек")
+					sleep(30)
+					bot.send_message(USERTELEGRAMID, "Пауза 30 сек закончилась")
 					break
 		sleep(30)
 # WANDA ROVERO - доделать с картинок
