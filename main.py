@@ -6,6 +6,7 @@ from time import sleep, gmtime, strftime, time, timezone, altzone, ctime
 from random import choice, randint
 from json import dump, load, dumps, loads
 from math import ceil
+from threading import Thread
 
 import clipboard
 from uuid import uuid1
@@ -16,7 +17,7 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
 from names import get_full_name
 from telebot import TeleBot
-from threading import Thread
+
 
 ALPHABET = list('abcdefghijklmnopqrstuvwxyz')
 OFFER_LINK = "http://wait3seconds.ga/"
@@ -38,9 +39,13 @@ HELPER = '''/start - выведет именна всех ботов
 /new - Создает новый аккаунт (если хватает ДЕНЮЖЕК)
 /del - Удаляет аккаунт
 /stat - Высвечивает статистику всех ботов
-/pcheck - Показывает включенна ли пауза'''
+/pcheck - Показывает включенна ли пауза
+/autoposting - Запускает автопостинг
+/autofollowing - Запускает автофолловинг'''
 active_bots_following = []
 active_bots_posting = []
+autoposting_mode = True
+autofollowing_mode = True
 def jload(jload_path):
 	if exists(jload_path):
 		while True:
@@ -325,6 +330,7 @@ def autofollowing(autofollowing_bot_name, follow_mode = 0, last_count = 0):
 		following_base = []
 		following_save_base = jload("Bots/" + autofollowing_bot_name + "/base.json")
 		mode = follow_mode
+		jdump("Bots/" + autofollowing_bot_name + "/pause.json", time() + 86400)
 		if len(following_save_base) < 4500 and mode == 0:
 			while count_of_followings < MAX_FOLLOWING_PER_DAY:
 				if len(following_base) == 0:
@@ -388,7 +394,7 @@ def autofollowing(autofollowing_bot_name, follow_mode = 0, last_count = 0):
 		for x in settings:
 			s_m = s_m + '\n' + str(x) + ": " + str(settings[x])
 		bot.send_message(USERTELEGRAMID, s_m)
-		
+		jdump("Bots/" + autofollowing_bot_name + "/pause.json", time() + 86400)
 		if mode == 0:
 			return False, mode, count_of_followings
 		elif mode == 1:
@@ -449,30 +455,36 @@ def tcode(t_tzid):
 	return
 
 def url_to_imgs():
+	letter_choice = choice(ALPHABET)
+	driver = driver_start_empty("https://www.kindgirls.com/girls/?i=" + letter_choice, True)
 	while True:
+		sleep(1)
 		letter_choice = choice(ALPHABET)
-		driver = driver_start_empty("https://www.kindgirls.com/girls/?i=" + letter_choice, True)
-		while True:
-			sleep(1)
-			models = wait(driver, '//div[@class="model_list"]', 10, 2)
-			if len(models) > 0:
-				random_model = randint(0, len(models)-1)
-			else:
-				continue
-			models[random_model].click()
-			alboms = wait(driver, '//div[@class="gal_list"]', 10, 2)
-			if len(alboms) > 8:
-				clipboard.copy(driver.current_url)
-				return driver.current_url
-			else:
-				driver.get("https://www.kindgirls.com/girls/?i=" + letter_choice)
-				continue
+		driver.get("https://www.kindgirls.com/girls/?i=" + letter_choice)
+		models = wait(driver, '//div[@class="model_list"]', 10, 2)
+		if len(models) > 0:
+			random_model = randint(0, len(models)-1)
+		else:
+			continue
+		models[random_model].click()
+		alboms = wait(driver, '//div[@class="gal_list"]', 10, 2)
+		if len(alboms) > 8:
+			clipboard.copy(driver.current_url)
+			return driver.current_url
+		else:
+			continue
 def newaccount():
 	try:
 		# Получение телефона
 		print("TRY GET PHONE")
 		phone, tzid = phone_gen()
+		# phone, tzid = "79013682878",	'00000000'
 		if phone:
+			# name = "Wanda Rovero"
+			# password = "00000000"
+			# driver = driver_start(name, False)
+			# login = "WandaRovero"
+
 			print(phone)
 			driver = driver_start_empty("https://twitter.com/i/flow/signup", False)
 			name = get_full_name(gender='female')
@@ -501,7 +513,9 @@ def newaccount():
 			driver.get("https://twitter.com/home")
 			mkdir("Bots/" + name)
 			pdump("Bots/"+name+"/cookie.pkl", driver.get_cookies())
+			print("Hi")
 			driver.get("https://twitter.com/settings/screen_name")
+			sleep(3)
 			split_name = name.split(" ")
 			try_combinations = [split_name[0] + split_name[1], split_name[1] + split_name[0], split_name[1] +"_"+ split_name[0], split_name[0] +"_"+ split_name[1], split_name[1] + split_name[0] + "_", split_name[0] + split_name[1] + "_", split_name[0] + "_" + split_name[1] + "_", split_name[1] + "_" + split_name[0] + "_"]
 			login = None
@@ -529,7 +543,6 @@ def newaccount():
 			if wait(driver, "//option[@value='us']", 10, 1):
 				wait(driver, "//option[@value='us']", 10, 1).click()
 				wait(driver, "//div[@aria-haspopup='false'][1]", 10, 1).click()
-
 			imgs_url = url_to_imgs()
 			driver.get(imgs_url)
 			wait(driver, '//div[@class="gal_list"]', 10, 2)[0].click()
@@ -593,10 +606,53 @@ def pause_actions():
 	bot.send_message(USERTELEGRAMID, "Подождите 30 секунд")
 	sleep(30)
 	bot.send_message(USERTELEGRAMID, "Пауза завершилась")
-# cookie_creator("Celia Brown")
-# test_account("Bot Name")
 
+# balance_info = get('http://api.sms-reg.com/getOperations.php?opstate=active&apikey=8t0kjwxk118uih3peiw3c8rbb7e61g62')
+# balance_info = balance_info.text
+# json_balance_info = loads(balance_info)
 
+# acs = listdir("Bots/")
+# for x in acs:
+# 	driver = driver_start(x, False)
+# 	a = jload("Bots/" + x + "/settings.json")
+# 	print(x)
+
+# for x in json_balance_info:
+# 	print(x)
+# 	# print(x["msg"])
+# 	try:
+# 		if x["phone"] == "79028000269":
+# 			print("HI")
+# 			print(x["phone"])
+# 			print(x["tzid"])
+# 			clipboard.copy(x["tzid"])
+# 	except Exception as e:
+# 		continue
+
+def autoposting_loop():
+	global active_bots_posting
+	bots = listdir("Bots/")
+	active_bots_posting.extend(bots)
+	while True:
+		for x in active_bots_posting:
+			autoposting(x)
+		sleep(10800)
+def autofollowing_loop():
+	bots = listdir("Bots/")
+	for x in range(COUNT_OF_FOLLOW_THREADS):
+		autofollowing(bots[x])
+		sleep(30)
+	while True:
+		if len(active_bots_following) < COUNT_OF_FOLLOW_THREADS:
+			bots = listdir("Bots/")
+			for x in bots:
+				b_pause = jload("Bots/" + x + "/pause.json")
+				if b_pause < time():
+					active_bots_following.append(x)
+					autofollowing(x)
+					break
+		sleep(30)
+# WANDA ROVERO - доделать с картинок
 bot = TeleBot('1107563794:AAHwpuyWE1JWF2ZLTfGp7pMnMmWX_ys8omw')
 
 @bot.message_handler(commands=['help'])
@@ -680,19 +736,41 @@ def send_welcome(message):
 		else:
 			bot.send_message(USERTELEGRAMID, x + ": Пауза до " + ctime(pause))
 
+@bot.message_handler(commands=['autoposting'])
+def send_welcome(message):
+	if autoposting_mode:
+		Thread(target=autoposting_loop)
+		bot.send_message(USERTELEGRAMID, "Автопостинг запущен!")
+	else:
+		bot.send_message(USERTELEGRAMID, "Автопостинг уже запущен")
+
+@bot.message_handler(commands=['autofollowing'])
+def send_welcome(message):
+	if autofollowing_mode:
+		Thread(target=autofollowing_loop)
+		bot.send_message(USERTELEGRAMID, "Автофолловинг запущен!")
+	else:
+		bot.send_message(USERTELEGRAMID, "Автофолловинг уже запущен")
+
 def start_bot(message):
 	b_name = message.text
 	if exists("Bots/" + b_name):
 		pause = jload("Bots/" + b_name + "/pause.json")
-		if pause < time():
-			active_bots_following.append(b_name)
-			Thread(target=autofollowing, args=(b_name,)).start()
+		if not b_name in active_bots_following:
+			if pause < time():
+				active_bots_following.append(b_name)
+				Thread(target=autofollowing, args=(b_name,)).start()
+			else:
+				bot.send_message(USERTELEGRAMID, "Пауза, вы сможете повторно запустить автофоловинг в: " + strftime("%X", gmtime(pause)))
 		else:
-			bot.send_message(USERTELEGRAMID, "Пауза, вы сможете повторно запустить автофоловинг в: " + strftime("%X", gmtime(pause)))
+			bot.send_message(USERTELEGRAMID, "Автофолловинг уже запущен")
 
-		active_bots_posting.append(b_name)
-		Thread(target=autoposting, args=(b_name,)).start()
-		Thread(target=pause_actions).start()
+		if not b_name in active_bots_posting:
+			active_bots_posting.append(b_name)
+			Thread(target=autoposting, args=(b_name,)).start()
+			Thread(target=pause_actions).start()
+		else:
+			bot.send_message(USERTELEGRAMID, "Автопостинг уже запущен")
 	else:
 		bot.send_message(USERTELEGRAMID, "Неверное имя бота")
 	# Thread(target=autoposting, args=(b_name,)).start()
