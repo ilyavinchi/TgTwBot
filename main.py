@@ -738,17 +738,21 @@ def send_welcome(message):
 
 @bot.message_handler(commands=['autoposting'])
 def send_welcome(message):
+	global autoposting_mode
 	if autoposting_mode:
 		Thread(target=autoposting_loop)
 		bot.send_message(USERTELEGRAMID, "Автопостинг запущен!")
+		autoposting_mode = False
 	else:
 		bot.send_message(USERTELEGRAMID, "Автопостинг уже запущен")
 
 @bot.message_handler(commands=['autofollowing'])
 def send_welcome(message):
+	global autofollowing_mode
 	if autofollowing_mode:
 		Thread(target=autofollowing_loop)
 		bot.send_message(USERTELEGRAMID, "Автофолловинг запущен!")
+		autofollowing_mode = False
 	else:
 		bot.send_message(USERTELEGRAMID, "Автофолловинг уже запущен")
 
