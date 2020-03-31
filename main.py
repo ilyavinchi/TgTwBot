@@ -633,9 +633,12 @@ def autoposting_loop():
 	global active_bots_posting
 	bots = listdir("Bots/")
 	active_bots_posting.extend(bots)
+	print(active_bots_posting)
 	while True:
 		for x in active_bots_posting:
+			print("Start Autoposting for " + x)
 			autoposting(x)
+			sleep(30)
 		sleep(10800)
 def autofollowing_loop():
 	bots = listdir("Bots/")
