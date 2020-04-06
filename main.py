@@ -235,7 +235,7 @@ def autoposting(autoposting_bot_name):
 			bot.send_message(USERTELEGRAMID, autoposting_bot_name + " AUTOPOSTING START")
 			account_settings = jload("Bots/" + autoposting_bot_name + "/settings.json")
 			driver = driver_start(autoposting_bot_name, False)
-			driver.get(account_settings["IMG URL"])
+			driver.get(account_settings["URL"])
 			alboms = wait(driver, '//div[@class="gal_list"]', 10, 2)
 			alboms[account_settings["ALBOM ID"]].click()
 			photos = wait(driver, '//div[@class="gal_list"]', 10, 2)
@@ -474,126 +474,6 @@ def url_to_imgs():
 			return driver.current_url
 		else:
 			continue
-def newaccount():
-	try:
-		# Получение телефона
-		print("TRY GET PHONE")
-		phone, tzid = phone_gen()
-		# phone, tzid = "79013682878",	'00000000'
-		if phone:
-			# name = "Wanda Rovero"
-			# password = "00000000"
-			# driver = driver_start(name, False)
-			# login = "WandaRovero"
-
-			print(phone)
-			driver = driver_start_empty("https://twitter.com/i/flow/signup", False)
-			name = get_full_name(gender='female')
-			wait(driver, "//input[@type='text']", 60, 1).send_keys(name)
-			wait(driver, "//input[@type='tel']", 60, 1).send_keys(phone)
-
-			if wait(driver, "//div[@role='group']/div/div/div[1]/div/select/option[@value='" + str(randint(1,12))+"']", 2, 1):
-				wait(driver, "//div[@role='group']/div/div/div[1]/div/select/option[@value='" + str(randint(1,12))+"']", 10, 1).click()
-				wait(driver, "//div[@role='group']/div/div/div[2]/div/select/option[@value='" + str(randint(1,28))+"']", 10, 1).click()
-				wait(driver, "//div[@role='group']/div/div/div[3]/div/select/option[@value='" + str(randint(1996,2001))+"']", 10, 1).click()
-
-			while not wait(driver, "//div[@data-testid='confirmationSheetConfirm']", 1, 1):
-				wait(driver, '//div[@aria-labelledby="modal-header"]/*//div[@role="button"]/div/span/span', 1, 1).click()
-			wait(driver, "//div[@data-testid='confirmationSheetConfirm']", 1, 1).click()
-			print("TRY GET CODE")
-			code = sms_get(tzid)
-			if not code:
-				raise Exception("Код не пришел")
-			wait(driver, "//input[@name='verfication_code']", 10, 1).send_keys(code)
-			wait(driver, "//div/div/div/div[@role='button']/div/span/span", 10, 1).click()
-			password = str(uuid1()).replace("-", "")[:8]
-			print(password)
-			wait(driver, "//input[@name='password']", 10, 1).send_keys(password)
-			while wait(driver, "//div/div/div/div[@role='button']/div/span/span", 1, 1):
-				wait(driver, "//div/div/div/div[@role='button']/div/span/span", 1, 1).click()
-			driver.get("https://twitter.com/home")
-			mkdir("Bots/" + name)
-			pdump("Bots/"+name+"/cookie.pkl", driver.get_cookies())
-			print("Hi")
-			driver.get("https://twitter.com/settings/screen_name")
-			sleep(3)
-			split_name = name.split(" ")
-			try_combinations = [split_name[0] + split_name[1], split_name[1] + split_name[0], split_name[1] +"_"+ split_name[0], split_name[0] +"_"+ split_name[1], split_name[1] + split_name[0] + "_", split_name[0] + split_name[1] + "_", split_name[0] + "_" + split_name[1] + "_", split_name[1] + "_" + split_name[0] + "_"]
-			login = None
-			for x in range(8):
-				if driver.current_url == "https://twitter.com/settings/screen_name":
-					while wait(driver, "//input", 10, 1).get_attribute("value") != "":
-						wait(driver, "//input", 10, 1).send_keys(Keys.BACK_SPACE)
-					wait(driver, "//input", 10, 1).send_keys(try_combinations[x])
-					wait(driver, '//div[@data-testid="settingsDetailSave"]', 10, 1).click()
-					login = try_combinations[x]
-					sleep(2)
-				else:
-					break
-
-			try:
-				login = wait(driver, "//div[@role='tablist']/div/h2", 10, 1).text
-			except Exception as e:
-				pass
-			print("LOGIN: ", login)
-			driver.get("https://twitter.com/settings/language")
-			if wait(driver, "//option[@value='en']", 10, 1):
-				wait(driver, "//option[@value='en']", 10, 1).click()
-				wait(driver, "//div/div/div/span/span", 10, 1).click()
-			driver.get("https://twitter.com/settings/country")
-			if wait(driver, "//option[@value='us']", 10, 1):
-				wait(driver, "//option[@value='us']", 10, 1).click()
-				wait(driver, "//div[@aria-haspopup='false'][1]", 10, 1).click()
-			imgs_url = url_to_imgs()
-			driver.get(imgs_url)
-			wait(driver, '//div[@class="gal_list"]', 10, 2)[0].click()
-			wait(driver, '//div[@class="gal_list"]', 10, 2)[0].click()
-			picture_req = get(wait(driver, '//img', 10, 1).get_attribute("src"))
-			if picture_req.status_code == 200:
-				with open("2.jpg", 'wb') as f:
-					f.write(picture_req.content)
-			system("nconvert -out jpeg -o %_.jpg -q 95 -rmeta -rexifthumb -noise uniform 0.1 *.jpg")
-
-			driver.get("https://twitter.com/settings/profile")
-			wait(driver, "//div[1]/div[1]/div/div/div/input[@type='file']", 10, 1).send_keys(abspath("1_.jpg"))
-			wait(driver, "//div[2]/div[1]/div/div/div/div/div/div/div/div/div/div/div/span/span", 10, 1).click()
-			wait(driver, "//div[1]/div[2]/div/div/div/input[@type='file']", 10, 1).send_keys(abspath("2_.jpg"))
-			wait(driver, "//div[2]/div[1]/div/div/div/div/div/div/div/div/div/div/div/span/span", 10, 1).click()
-			offer_url = url_shortener_main(name)
-			wait(driver, "//textarea[@name='description']", 10, 1).send_keys("Register and find me here - " + offer_url)
-			wait(driver, "//input[@name='url']", 10, 1).send_keys(offer_url)
-			wait(driver, "//div[1]/div/div/div/div/div/div/div/div/div/div/div/div/span/span", 10, 1).click()
-			sleep(5)
-			remove("1_.jpg")
-			remove("2_.jpg")
-			remove("2.jpg")
-			driver.get("https://twitter.com/home")
-			get('http://api.sms-reg.com/setOperationOk.php?tzid=' + tzid + '&apikey=8t0kjwxk118uih3peiw3c8rbb7e61g62')
-			account_settings = {}
-			account_settings["Bot name"] = name
-			account_settings["Login"] = login
-			account_settings["Password"] = password
-			account_settings["TZID"] = tzid
-			account_settings["IMG URL"] = imgs_url
-			account_settings["ALBOM ID"] = 0
-			account_settings["PHOTO ID"] = 1
-			jdump("Bots/" + name + "/settings.json", account_settings)
-			stat = {}
-			stat["Followings"] = "OFF"
-			stat["Posts"] = "OFF"
-			jdump("Bots/" + name + "/stat.json", stat)
-			jdump("Bots/" + name + "/base.json", [])
-			jdump("Bots/" + name + "/pause.json", 0)
-			balance_info = get('http://api.sms-reg.com/getBalance.php?apikey=8t0kjwxk118uih3peiw3c8rbb7e61g62')
-			balance_info = balance_info.text
-			json_balance_info = loads(balance_info)
-			bot.send_message(USERTELEGRAMID, "Ваш балланс: " + json_balance_info['balance'])			
-			driver.quit()
-			bot.send_message(USERTELEGRAMID, "Имя нового бота: " + name)
-			return name
-	except Exception as e:
-		print(e)
-		return False
 
 def pausecheker():
 	while True:
