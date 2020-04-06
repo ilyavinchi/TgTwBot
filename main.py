@@ -539,142 +539,142 @@ def autofollowing_loop():
 					continue
 		sleep(30)
 
-# for x in listdir("Bots/"):
-# 	test_account(x)	
+for x in listdir("Bots/"):
+	test_account(x)	
 
-bot = TeleBot('1107563794:AAHwpuyWE1JWF2ZLTfGp7pMnMmWX_ys8omw')
+# bot = TeleBot('1107563794:AAHwpuyWE1JWF2ZLTfGp7pMnMmWX_ys8omw')
 
-@bot.message_handler(commands=['help'])
-def send_welcome(message):
-	bot.send_message(USERTELEGRAMID, HELPER)
+# @bot.message_handler(commands=['help'])
+# def send_welcome(message):
+# 	bot.send_message(USERTELEGRAMID, HELPER)
 	
-@bot.message_handler(commands=['start'])
-def send_welcome(message):
-	bots_names = listdir("Bots/")
-	s_m = "Имена ботов:"
-	for x in bots_names:
-		s_m = s_m + "\n" + x
-	bot.send_message(USERTELEGRAMID, s_m)
+# @bot.message_handler(commands=['start'])
+# def send_welcome(message):
+# 	bots_names = listdir("Bots/")
+# 	s_m = "Имена ботов:"
+# 	for x in bots_names:
+# 		s_m = s_m + "\n" + x
+# 	bot.send_message(USERTELEGRAMID, s_m)
 
-@bot.message_handler(commands=['off'])
-def send_welcome(message):
-	bots_names = listdir("Bots/")
-	for x in bots_names:
-		if not x in active_bots_following:
-			bot.send_message(USERTELEGRAMID, x + " автоподписка не включена")
-		if not x in active_bots_posting:
-			bot.send_message(USERTELEGRAMID, x + " автопостинг не включен")
+# @bot.message_handler(commands=['off'])
+# def send_welcome(message):
+# 	bots_names = listdir("Bots/")
+# 	for x in bots_names:
+# 		if not x in active_bots_following:
+# 			bot.send_message(USERTELEGRAMID, x + " автоподписка не включена")
+# 		if not x in active_bots_posting:
+# 			bot.send_message(USERTELEGRAMID, x + " автопостинг не включен")
 
-@bot.message_handler(commands=['active'])
-def send_welcome(message):
-	bots_names = listdir("Bots/")
-	for x in bots_names:
-		if x in active_bots_following:
-			bot.send_message(USERTELEGRAMID, x + " автоподписка включена")
-		if x in active_bots_posting:
-			bot.send_message(USERTELEGRAMID, x + " автопостинг включен")
+# @bot.message_handler(commands=['active'])
+# def send_welcome(message):
+# 	bots_names = listdir("Bots/")
+# 	for x in bots_names:
+# 		if x in active_bots_following:
+# 			bot.send_message(USERTELEGRAMID, x + " автоподписка включена")
+# 		if x in active_bots_posting:
+# 			bot.send_message(USERTELEGRAMID, x + " автопостинг включен")
 
-@bot.message_handler(commands=['s'])
-def send_welcome(message):
-	bot.send_message(USERTELEGRAMID, 'Имя бота?: ')
-	bot.register_next_step_handler(message, start_bot)
+# @bot.message_handler(commands=['s'])
+# def send_welcome(message):
+# 	bot.send_message(USERTELEGRAMID, 'Имя бота?: ')
+# 	bot.register_next_step_handler(message, start_bot)
 
-@bot.message_handler(commands=['b'])
-def send_welcome(message):
-	balance_info = get('http://api.sms-reg.com/getBalance.php?apikey=8t0kjwxk118uih3peiw3c8rbb7e61g62')
-	balance_info = balance_info.text
-	json_balance_info = loads(balance_info)
-	bot.send_message(USERTELEGRAMID, "Ваш балланс: " + json_balance_info['balance'])
+# @bot.message_handler(commands=['b'])
+# def send_welcome(message):
+# 	balance_info = get('http://api.sms-reg.com/getBalance.php?apikey=8t0kjwxk118uih3peiw3c8rbb7e61g62')
+# 	balance_info = balance_info.text
+# 	json_balance_info = loads(balance_info)
+# 	bot.send_message(USERTELEGRAMID, "Ваш балланс: " + json_balance_info['balance'])
 
-@bot.message_handler(commands=['code'])
-def send_welcome(message):
-	bot.send_message(USERTELEGRAMID, 'Введите tzid: ')
-	bot.register_next_step_handler(message, getcode)
+# @bot.message_handler(commands=['code'])
+# def send_welcome(message):
+# 	bot.send_message(USERTELEGRAMID, 'Введите tzid: ')
+# 	bot.register_next_step_handler(message, getcode)
 
-@bot.message_handler(commands=['new'])
-def send_welcome(message):
-	if balance():
-		bot.send_message(USERTELEGRAMID, "Создание началось")
-		Thread(target=newaccount).start()
-	else:
-		bot.send_message(USERTELEGRAMID, "Пополните баланс")
+# @bot.message_handler(commands=['new'])
+# def send_welcome(message):
+# 	if balance():
+# 		bot.send_message(USERTELEGRAMID, "Создание началось")
+# 		Thread(target=newaccount).start()
+# 	else:
+# 		bot.send_message(USERTELEGRAMID, "Пополните баланс")
 
-@bot.message_handler(commands=['del'])
-def send_welcome(message):
-	bot.send_message(USERTELEGRAMID, 'Имя бота (удаление)?: ')
-	bot.register_next_step_handler(message, delbot)
+# @bot.message_handler(commands=['del'])
+# def send_welcome(message):
+# 	bot.send_message(USERTELEGRAMID, 'Имя бота (удаление)?: ')
+# 	bot.register_next_step_handler(message, delbot)
 
-@bot.message_handler(commands=['stat'])
-def send_welcome(message):
-	bots_names = listdir("Bots/")
-	for x in bots_names:
-		try:
-			bot_stat = jload("Bots/" + x + "/stat.json")
-			bot.send_message(USERTELEGRAMID, "Имя бота: " + x + "\nПодписок: " + bot_stat["Followings"] + "\nСледующий пост: " + bot_stat["Posts"])
-		except Exception as e:
-			print(e)
-			continue
+# @bot.message_handler(commands=['stat'])
+# def send_welcome(message):
+# 	bots_names = listdir("Bots/")
+# 	for x in bots_names:
+# 		try:
+# 			bot_stat = jload("Bots/" + x + "/stat.json")
+# 			bot.send_message(USERTELEGRAMID, "Имя бота: " + x + "\nПодписок: " + bot_stat["Followings"] + "\nСледующий пост: " + bot_stat["Posts"])
+# 		except Exception as e:
+# 			print(e)
+# 			continue
 
-@bot.message_handler(commands=['pcheck'])
-def send_welcome(message):
-	bots_names = listdir("Bots/")
-	for x in bots_names:
-		pause = jload("Bots/" + x + "/pause.json")
-		if pause < time():
-			bot.send_message(USERTELEGRAMID, x + ": Пауза закончилась")
-		else:
-			bot.send_message(USERTELEGRAMID, x + ": Пауза до " + ctime(pause))
+# @bot.message_handler(commands=['pcheck'])
+# def send_welcome(message):
+# 	bots_names = listdir("Bots/")
+# 	for x in bots_names:
+# 		pause = jload("Bots/" + x + "/pause.json")
+# 		if pause < time():
+# 			bot.send_message(USERTELEGRAMID, x + ": Пауза закончилась")
+# 		else:
+# 			bot.send_message(USERTELEGRAMID, x + ": Пауза до " + ctime(pause))
 
-@bot.message_handler(commands=['autoposting'])
-def send_welcome(message):
-	global autoposting_mode
-	if autoposting_mode:
-		Thread(target=autoposting_loop).start()
-		bot.send_message(USERTELEGRAMID, "Автопостинг запущен!")
-		autoposting_mode = False
-	else:
-		bot.send_message(USERTELEGRAMID, "Автопостинг уже запущен")
+# @bot.message_handler(commands=['autoposting'])
+# def send_welcome(message):
+# 	global autoposting_mode
+# 	if autoposting_mode:
+# 		Thread(target=autoposting_loop).start()
+# 		bot.send_message(USERTELEGRAMID, "Автопостинг запущен!")
+# 		autoposting_mode = False
+# 	else:
+# 		bot.send_message(USERTELEGRAMID, "Автопостинг уже запущен")
 
-@bot.message_handler(commands=['autofollowing'])
-def send_welcome(message):
-	global autofollowing_mode
-	if autofollowing_mode:
-		Thread(target=autofollowing_loop).start()
-		bot.send_message(USERTELEGRAMID, "Автофолловинг запущен!")
-		autofollowing_mode = False
-	else:
-		bot.send_message(USERTELEGRAMID, "Автофолловинг уже запущен")
+# @bot.message_handler(commands=['autofollowing'])
+# def send_welcome(message):
+# 	global autofollowing_mode
+# 	if autofollowing_mode:
+# 		Thread(target=autofollowing_loop).start()
+# 		bot.send_message(USERTELEGRAMID, "Автофолловинг запущен!")
+# 		autofollowing_mode = False
+# 	else:
+# 		bot.send_message(USERTELEGRAMID, "Автофолловинг уже запущен")
 
-def start_bot(message):
-	b_name = message.text
-	if exists("Bots/" + b_name):
-		pause = jload("Bots/" + b_name + "/pause.json")
-		if not b_name in active_bots_following:
-			if pause < time():
-				active_bots_following.append(b_name)
-				Thread(target=autofollowing, args=(b_name,)).start()
-			else:
-				bot.send_message(USERTELEGRAMID, "Пауза, вы сможете повторно запустить автофоловинг в: " + strftime("%X", gmtime(pause)))
-		else:
-			bot.send_message(USERTELEGRAMID, "Автофолловинг уже запущен")
+# def start_bot(message):
+# 	b_name = message.text
+# 	if exists("Bots/" + b_name):
+# 		pause = jload("Bots/" + b_name + "/pause.json")
+# 		if not b_name in active_bots_following:
+# 			if pause < time():
+# 				active_bots_following.append(b_name)
+# 				Thread(target=autofollowing, args=(b_name,)).start()
+# 			else:
+# 				bot.send_message(USERTELEGRAMID, "Пауза, вы сможете повторно запустить автофоловинг в: " + strftime("%X", gmtime(pause)))
+# 		else:
+# 			bot.send_message(USERTELEGRAMID, "Автофолловинг уже запущен")
 
-		if not b_name in active_bots_posting:
-			active_bots_posting.append(b_name)
-			Thread(target=autoposting, args=(b_name,)).start()
-			Thread(target=pause_actions).start()
-		else:
-			bot.send_message(USERTELEGRAMID, "Автопостинг уже запущен")
-	else:
-		bot.send_message(USERTELEGRAMID, "Неверное имя бота")
-	# Thread(target=autoposting, args=(b_name,)).start()
-def getcode(message):
-	tzid = message.text
-	Thread(target=tcode, args=(tzid,)).start()
-def delbot(message):
-	bname = message.text
-	if exists("Bots/" + bname):
-		rmtree("Bots/" + bname)
-	else:
-		bot.send_message(USERTELEGRAMID, "Файл не найден")
+# 		if not b_name in active_bots_posting:
+# 			active_bots_posting.append(b_name)
+# 			Thread(target=autoposting, args=(b_name,)).start()
+# 			Thread(target=pause_actions).start()
+# 		else:
+# 			bot.send_message(USERTELEGRAMID, "Автопостинг уже запущен")
+# 	else:
+# 		bot.send_message(USERTELEGRAMID, "Неверное имя бота")
+# 	# Thread(target=autoposting, args=(b_name,)).start()
+# def getcode(message):
+# 	tzid = message.text
+# 	Thread(target=tcode, args=(tzid,)).start()
+# def delbot(message):
+# 	bname = message.text
+# 	if exists("Bots/" + bname):
+# 		rmtree("Bots/" + bname)
+# 	else:
+# 		bot.send_message(USERTELEGRAMID, "Файл не найден")
 
-bot.polling()
+# bot.polling()
