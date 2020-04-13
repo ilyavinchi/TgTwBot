@@ -714,7 +714,7 @@ def start_bot(message):
 		# else:
 		# 	bot.send_message(USERTELEGRAMID, "Автопостинг уже запущен")
 	else:
-		# bot.send_message(USERTELEGRAMID, "Неверное имя бота")
+		bot.send_message(USERTELEGRAMID, "Неверное имя бота")
 def getcode(message):
 	tzid = message.text
 	Thread(target=tcode, args=(tzid,)).start()
