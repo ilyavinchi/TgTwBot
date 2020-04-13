@@ -29,7 +29,7 @@ PARSE_AT_A_TIME = 5
 SEND_PARSING_TEXT = "(nude OR sex OR tits)"
 PAUSE_BETWEEN_FOLLOWINGS = [60, 90]
 MAX_FOLLOWING_PER_DAY = 300
-USERTELEGRAMID = -415164113
+USERTELEGRAMID = -479282252
 HELPER = '''/start - выведет именна всех ботов
 /off - выведет именна всех не активных ботов
 /active - выведет именна всех активных ботов
@@ -41,7 +41,8 @@ HELPER = '''/start - выведет именна всех ботов
 /stat - Высвечивает статистику всех ботов
 /pcheck - Показывает включенна ли пауза
 /autoposting - Запускает автопостинг
-/autofollowing - Запускает автофолловинг'''
+/autofollowing - Запускает автофолловинг
+/test - Запускает аккаунт на тест'''
 active_bots_following = []
 active_bots_posting = []
 autoposting_mode = True
@@ -228,63 +229,80 @@ def url_shortener_main(bot_name):
 	driver.find_element(By.XPATH , "//input[@class='submitbutton']").submit()
 	link_save = wait(driver, '//input[@id="short_url"]', 10, 1).get_attribute("value")
 	return link_save
-def autoposting(autoposting_bot_name):
-	try:
-		while True:
-			changearrayval("Bots/" + autoposting_bot_name + "/stat.json", "Posts", "WORKS")
-			bot.send_message(USERTELEGRAMID, autoposting_bot_name + " AUTOPOSTING START")
-			account_settings = jload("Bots/" + autoposting_bot_name + "/settings.json")
-			driver = driver_start(autoposting_bot_name, False)
-			driver.get(account_settings["URL"])
-			alboms = wait(driver, '//div[@class="gal_list"]', 10, 2)
-			alboms[account_settings["ALBOM ID"]].click()
-			photos = wait(driver, '//div[@class="gal_list"]', 10, 2)
-			photos[account_settings["PHOTO ID"]].click()
-			URL = wait(driver, '//img', 10, 1).get_attribute("src")
-			account_settings["PHOTO ID"] += 1
-			if account_settings["PHOTO ID"] == len(photos):
-				if (account_settings["ALBOM ID"] + 1) > len(alboms) - 1:
-					account_settings["PHOTO ID"] = 0
-					account_settings["ALBOM ID"] = 0
-				else:
-					account_settings["PHOTO ID"] = 0
-					account_settings["ALBOM ID"] += 1
-			jdump("Bots/" + autoposting_bot_name + "/settings.json", account_settings)
+def autoposting():
+	global active_bots_posting
+	bots = listdir("Bots/")
+	active_bots_posting.extend(bots)
+	while True:
+		driver = driver_start_empty("https://twitter.com/login", False)
+		complete_active_bots_posting = []
+		complete_active_bots_posting.extend(active_bots_posting)
+		for j in complete_active_bots_posting:
+			bot.send_message(USERTELEGRAMID, "Запущен Автопостинг " + str(complete_active_bots_posting.index(j) + 1) + " из " + str(len(complete_active_bots_posting)))
+			try:
+				changearrayval("Bots/" + j + "/stat.json", "Posts", "WORKS")
+				bot.send_message(USERTELEGRAMID, j + " AUTOPOSTING START")
+				account_settings = jload("Bots/" + j + "/settings.json")
+				driver.get(account_settings["URL"])
+				alboms = wait(driver, '//div[@class="gal_list"]', 10, 2)
+				alboms[account_settings["ALBOM ID"]].click()
+				photos = wait(driver, '//div[@class="gal_list"]', 10, 2)
+				photos[account_settings["PHOTO ID"]].click()
+				URL = wait(driver, '//img', 10, 1).get_attribute("src")
+				account_settings["PHOTO ID"] += 1
+				if account_settings["PHOTO ID"] == len(photos):
+					if (account_settings["ALBOM ID"] + 1) > len(alboms) - 1:
+						account_settings["PHOTO ID"] = 0
+						account_settings["ALBOM ID"] = 0
+					else:
+						account_settings["PHOTO ID"] = 0
+						account_settings["ALBOM ID"] += 1
+				jdump("Bots/" + j + "/settings.json", account_settings)
 
-			driver.get("https://twitter.com/home")	
+				driver.delete_all_cookies()
+				driver.get("https://twitter.com/login")
+				for cookie in pickle.load(open("Bots/" + j + "/cookie.pkl", "rb")):
+					if 'expiry' in cookie:
+						del cookie['expiry']
+						driver.add_cookie(cookie)
+				driver.refresh()
+				driver.get("https://twitter.com/home")	
 
-			picture_req = get(URL)
-			img_name = str(uuid1()).replace("-", "")[:4]
-			if picture_req.status_code == 200:
-				with open(img_name+".jpg", 'wb') as f:
-					f.write(picture_req.content)
+				picture_req = get(URL)
+				img_name = str(uuid1()).replace("-", "")[:4]
+				if picture_req.status_code == 200:
+					with open(img_name+".jpg", 'wb') as f:
+						f.write(picture_req.content)
 
-			system("nconvert -out jpeg -o %_.jpg -q 95 -rmeta -rexifthumb -noise uniform 0.1 "+img_name+".jpg")
-			wait(driver, '//input[@type="file"]', 10, 1).send_keys(abspath(img_name+"_.jpg"))
+				system("nconvert -out jpeg -o %_.jpg -q 95 -rmeta -rexifthumb -noise uniform 0.1 "+img_name+".jpg")
+				wait(driver, '//input[@type="file"]', 10, 1).send_keys(abspath(img_name+"_.jpg"))
 
-			with open("texts.txt", 'r', encoding="utf-8") as f:
-				all_texts = f.read().split("\n\n")
-			contents_from_file = all_texts[randint(0, len(all_texts) - 1)] + url_shortener(autoposting_bot_name)
-			clipboard.copy(contents_from_file)
-			wait(driver, '//div[@role="textbox"]', 10, 1).send_keys(Keys.CONTROL, 'v')
+				with open("texts.txt", 'r', encoding="utf-8") as f:
+					all_texts = f.read().split("\n\n")
+				contents_from_file = all_texts[randint(0, len(all_texts) - 1)] + url_shortener(j)
+				clipboard.copy(contents_from_file)
+				wait(driver, '//div[@role="textbox"]', 10, 1).send_keys(Keys.CONTROL, 'v')
 
-			wait(driver, '//div[@data-testid="tweetButtonInline"]', 10, 1).click()
-			sleep(5)
-			changearrayval("Bots/" + autoposting_bot_name + "/stat.json", "Posts", "Next post: " + strftime("%X", gmtime(time() - timezone + PAUSE_BETWEEN_POSTS)))
-			remove(img_name+".jpg")
-			remove(img_name+"_.jpg")
-			driver.quit()
-			sleep(PAUSE_BETWEEN_POSTS)
-	except Exception as e:
-		changearrayval("Bots/" + autoposting_bot_name + "/stat.json", "Posts", "ERROR")
-		active_bots_posting.remove(autoposting_bot_name)
+				wait(driver, '//div[@data-testid="tweetButtonInline"]', 10, 1).click()
+				sleep(5)
+				changearrayval("Bots/" + j + "/stat.json", "Posts", "Next post: " + strftime("%X", gmtime(time() - timezone + PAUSE_BETWEEN_POSTS + 10800)))
+				remove(img_name+".jpg")
+				remove(img_name+"_.jpg")
+			except Exception as e:
+				changearrayval("Bots/" + j + "/stat.json", "Posts", "ERROR")
+				active_bots_posting.remove(j)
+				settings = jload("Bots/" + j + "/settings.json")
+				s_m = "Account banned"
+				for x in settings:
+					s_m = s_m + '\n' + str(x) + ": " + str(settings[x])
+				bot.send_message(USERTELEGRAMID, s_m)
+
+		complete_active_bots_posting.clear()
 		driver.quit()
-		settings = jload("Bots/" + autoposting_bot_name + "/settings.json")
-		s_m = "Account banned"
-		for x in settings:
-			s_m = s_m + '\n' + str(x) + ": " + str(settings[x])
-		bot.send_message(USERTELEGRAMID, s_m)
-		return
+		bot.send_message(USERTELEGRAMID, "Пауза автопостинг 3 часа начата")
+		sleep(10800)
+		bot.send_message(USERTELEGRAMID, "Пауза автопостинг 3 часа закончилась")
+
 def delete_last_post(delete_last_post_name):
 	driver = driver_start(delete_last_post_name, False)
 	wait(driver, '//header[@role="banner"]//nav[@role="navigation"]/a[7]', 10, 1).click()
@@ -386,6 +404,7 @@ def autofollowing(autofollowing_bot_name, follow_mode = 0, last_count = 0):
 			bot.send_message(USERTELEGRAMID, "Бот " + autofollowing_bot_name + " закончил автоодписку")
 			return True, 0
 	except Exception as e:
+		jdump("Bots/" + autofollowing_bot_name + "/pause.json", time() + 600)
 		print(e)
 		driver.quit()
 		active_bots_following.remove(autofollowing_bot_name)
@@ -395,7 +414,6 @@ def autofollowing(autofollowing_bot_name, follow_mode = 0, last_count = 0):
 		for x in settings:
 			s_m = s_m + '\n' + str(x) + ": " + str(settings[x])
 		bot.send_message(USERTELEGRAMID, s_m)
-		jdump("Bots/" + autofollowing_bot_name + "/pause.json", time() + 86400)
 		if mode == 0:
 			return False, mode, count_of_followings
 		elif mode == 1:
@@ -510,21 +528,6 @@ def pause_actions():
 # 	except Exception as e:
 # 		continue
 
-def autoposting_loop():
-	global active_bots_posting
-	bots = listdir("Bots/")
-	active_bots_posting.extend(bots)
-	while True:
-		for x in active_bots_posting:
-			bot.send_message(USERTELEGRAMID, "Запущен Автопостинг " + str(active_bots_posting.index(x) + 1) + " из " + str(len(active_bots_posting)))
-			Thread(target=autoposting, args=(x,)).start()
-			bot.send_message(USERTELEGRAMID, "Пауза 30 сек")
-			sleep(30)
-
-		bot.send_message(USERTELEGRAMID, "Пауза автопостинг 3 часа начата")
-		sleep(10800)
-		bot.send_message(USERTELEGRAMID, "Пауза автопостинг 3 часа закончилась")
-
 def autofollowing_loop():
 	while True:
 		if len(active_bots_following) < COUNT_OF_FOLLOW_THREADS:
@@ -539,10 +542,51 @@ def autofollowing_loop():
 					continue
 		sleep(30)
 
-# for x in listdir("Bots/"):
-# 	test_account(x)	
+def BotTwitterStat():
+	while True:
+		driver = driver_start_empty("https://twitter.com/login", False)
+		for q in listdir("Bots/"):
+			driver.delete_all_cookies()
+			driver.get("https://twitter.com/login")
+			for cookie in pickle.load(open("Bots/" + q + "/cookie.pkl", "rb")):
+				if 'expiry' in cookie:
+					del cookie['expiry']
+					driver.add_cookie(cookie)
+			driver.refresh()
 
+			driver.get("https://analytics.twitter.com/about")
+			if wait(driver, '//button', 5, 1):
+				wait(driver, '//button/span[1]', 10, 1).click()
+				sleep(5)
+			driver.get("https://analytics.twitter.com/")
+			tweets = int(wait(driver, '//div[@data-metric="tweets"]/div[2]', 10, 1).text)
+			tweetviews = int(wait(driver, '//div[@data-metric="tweetviews"]/div[2]', 10, 1).text)
+			profileviews = int(wait(driver, '//div[@data-metric="profileviews"]/div[2]', 10, 1).text)
+			mentions = int(wait(driver, '//div[@data-metric="mentions"]/div[2]', 10, 1).text)
+			followers = int(wait(driver, '//div[@data-metric="followers"]/div[2]', 10, 1).text.split(" ")[0])
+			last_res = jload("Bots/" + q + "/profilestat.json")
+			last_tweets = last_res[-1][0]
+			last_tweetviews = last_res[-1][1]
+			last_profileviews = last_res[-1][2]
+			last_mentions = last_res[-1][3]
+			last_followers = last_res[-1][4]
+			last_res.append([tweets,tweetviews,profileviews,mentions,followers])
+			jdump("Bots/" + q + "/profilestat.json", last_res)
+			msg = ["Всего постов: " + str(tweets),
+						 "\nПросмотры всех твитов / изменилось за час: " + str(tweetviews) + " / " + str(tweetviews - last_tweetviews),
+						 "\nПросмотры профиля / изменилось за час: " + str(profileviews) + " / " + str(profileviews - last_profileviews),
+						 "\nКоличество упоминаний/ изменилось за час: " + str(mentions) + " / " + str(mentions - last_mentions),
+						 "\nКоличество подписчиков / изменилось за час: " + str(followers) + " / " + str(followers - last_followers)]
+
+			complete_msg = ""
+			for x in msg:
+				complete_msg += x
+			bot.send_message(USERTELEGRAMID, complete_msg)
+
+		driver.quit()
+		sleep(3600)
 bot = TeleBot('1107563794:AAHwpuyWE1JWF2ZLTfGp7pMnMmWX_ys8omw')
+Thread(target=BotTwitterStat).start()
 
 @bot.message_handler(commands=['help'])
 def send_welcome(message):
@@ -629,7 +673,7 @@ def send_welcome(message):
 def send_welcome(message):
 	global autoposting_mode
 	if autoposting_mode:
-		Thread(target=autoposting_loop).start()
+		Thread(target=autoposting).start()
 		bot.send_message(USERTELEGRAMID, "Автопостинг запущен!")
 		autoposting_mode = False
 	else:
@@ -645,6 +689,11 @@ def send_welcome(message):
 	else:
 		bot.send_message(USERTELEGRAMID, "Автофолловинг уже запущен")
 
+@bot.message_handler(commands=['test'])
+def send_welcome(message):
+	bot.send_message(USERTELEGRAMID, 'Имя бота?: ')
+	bot.register_next_step_handler(message, test_bot)
+
 def start_bot(message):
 	b_name = message.text
 	if exists("Bots/" + b_name):
@@ -658,15 +707,14 @@ def start_bot(message):
 		else:
 			bot.send_message(USERTELEGRAMID, "Автофолловинг уже запущен")
 
-		if not b_name in active_bots_posting:
-			active_bots_posting.append(b_name)
-			Thread(target=autoposting, args=(b_name,)).start()
-			Thread(target=pause_actions).start()
-		else:
-			bot.send_message(USERTELEGRAMID, "Автопостинг уже запущен")
+		# if not b_name in active_bots_posting:
+		# 	active_bots_posting.append(b_name)
+		# 	Thread(target=autoposting, args=(b_name,)).start()
+		# 	Thread(target=pause_actions).start()
+		# else:
+		# 	bot.send_message(USERTELEGRAMID, "Автопостинг уже запущен")
 	else:
-		bot.send_message(USERTELEGRAMID, "Неверное имя бота")
-	# Thread(target=autoposting, args=(b_name,)).start()
+		# bot.send_message(USERTELEGRAMID, "Неверное имя бота")
 def getcode(message):
 	tzid = message.text
 	Thread(target=tcode, args=(tzid,)).start()
@@ -676,5 +724,7 @@ def delbot(message):
 		rmtree("Bots/" + bname)
 	else:
 		bot.send_message(USERTELEGRAMID, "Файл не найден")
-
+def test_bot(message):
+	test_name = message.text
+	test_account(test_name)
 bot.polling()
